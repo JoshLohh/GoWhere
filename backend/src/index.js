@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import placesRouter from "./routes/places.js";
+import routeRouter from "./routes/route.js"; // New import
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
 
 // Routes
 app.use("/api/places", placesRouter);
+app.use("/api/route", routeRouter); // New route
 
 // Test AI service connection
 app.get("/api/ai-test", async (req, res) => {

@@ -7,31 +7,31 @@ const router = express.Router();
  * GET /api/places
  * Query params:
  * - vibe (string)
- * - lat (number)
- * - lng (number)
+ * - location (string)
+ * - stops (number, optional)
  * - time (hours, optional)
  */
 router.get("/", async (req, res) => {
   try {
-    const { vibe, lat, lng, time } = req.query;
+    const { vibe, location, stops, time } = req.query;
 
-    if (!lat || !lng) {
-      return res.status(400).json({ error: "lat and lng are required" });
+    if (!location) {
+      return res.status(400).json({ error: "location is a required query parameter." });
     }
 
-    const stops = await getSuggestedStops({
+    const suggestedStops = await getSuggestedStops({
       vibe,
-      lat: Number(lat),
-      lng: Number(lng),
+      location,
+      stops: Number(stops) || 10, // Default to 10 if not provided
       time: Number(time),
     });
 
     res.json({
       vibe: vibe || "chill",
-      stops,
+      stops: suggestedStops,
     });
   } catch (err) {
-    console.error("Error generating places:", err);
+    console.error("Error in /api/places route:", err.message);
     res.status(500).json({ error: "Internal server error" });
   }
 });

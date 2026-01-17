@@ -1,50 +1,43 @@
-// Helper function to compute the Haversine distance between two points in kilometers
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Radius of the Earth in kilometers
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
+import { Client } from "@googlemaps/google-maps-services-js";
 
-// Orders a list of stops using a greedy nearest-neighbor approach
-export function orderStopsByNearest({ startLat, startLng, stops }) {
-  if (!stops || stops.length === 0) {
-    return [];
+const client = new Client({});
+
+/**
+ * Optimizes a route between a list of places using Google Directions API.
+ * @param {Array<Object>} places - An array of place objects, each with lat and lng.
+ * @returns {Object} - The optimized route details from Google Directions API.
+ */
+export async function getOptimizedRoute(places) {
+  if (!places || places.length < 2) {
+    throw new Error("At least two places are required to optimize a route.");
   }
 
-  const orderedStops = [];
-  let remainingStops = [...stops];
-  let currentLat = startLat;
-  let currentLng = startLng;
+  const origin = `${places[0].lat},${places[0].lng}`;
+  const destination = `${places[places.length - 1].lat},${places[places.length - 1].lng}`;
 
-  while (remainingStops.length > 0) {
-    let nearestStop = null;
-    let minDistance = Infinity;
-    let nearestStopIndex = -1;
+  // Revert to a simple array of strings for waypoints, which the client library expects.
+  const waypoints = places.slice(1, -1).map(p => `${p.lat},${p.lng}`);
 
-    remainingStops.forEach((stop, index) => {
-      const distance = calculateDistance(currentLat, currentLng, stop.lat, stop.lng);
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearestStop = stop;
-        nearestStopIndex = index;
-      }
+  try {
+    const response = await client.directions({
+      params: {
+        origin: origin,
+        destination: destination,
+        waypoints: waypoints,
+        mode: "walking",
+        key: process.env.GOOGLE_MAPS_API_KEY,
+      },
+      timeout: 5000, // Keep increased timeout
     });
 
-    if (nearestStop) {
-      orderedStops.push(nearestStop);
-      currentLat = nearestStop.lat;
-      currentLng = nearestStop.lng;
-      remainingStops.splice(nearestStopIndex, 1);
+    if (response.data.status !== "OK") {
+      throw new Error(`Google Directions API error: ${response.data.status} - ${response.data.error_message || 'No error message provided.'}`);
     }
-  }
 
-  return orderedStops;
+    return response.data;
+
+  } catch (error) {
+    console.error("Full error object during route optimization:", error);
+    throw new Error("Failed to optimize route.");
+  }
 }
