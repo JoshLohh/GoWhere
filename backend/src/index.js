@@ -3,11 +3,12 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import placesRouter from "./routes/places.js";
-import routeRouter from "./routes/route.js"; // New import
+import routeRouter from "./routes/route.js";
 
 dotenv.config();
 
 const app = express();
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:8008";
 
 // Middleware
 app.use(cors());
@@ -20,15 +21,12 @@ app.get("/", (req, res) => {
 
 // Routes
 app.use("/api/places", placesRouter);
-app.use("/api/route", routeRouter); // New route
+app.use("/api/route", routeRouter);
 
 // Test AI service connection
 app.get("/api/ai-test", async (req, res) => {
   try {
-    // Dynamically import node-fetch if not available globally
-    const fetch = (await import('node-fetch')).default;
-    const aiServiceUrl = "http://localhost:8008/"; // AI service health check endpoint
-    const response = await fetch(aiServiceUrl);
+    const response = await fetch(AI_SERVICE_URL);
     const data = await response.json();
 
     if (response.ok) {

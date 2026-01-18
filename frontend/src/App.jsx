@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { MapPin, Clock, Sparkles, Coffee, Heart, UtensilsCrossed, TrendingUp, Star, Navigation, ArrowRight, ThumbsUp, Bookmark, ChevronLeft, AlertCircle } from 'lucide-react'
 import StartPage from './StartPage'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
 export default function App() {
   const [showStartPage, setShowStartPage] = useState(true)
   const [selectedVibe, setSelectedVibe] = useState('')
@@ -49,7 +51,7 @@ export default function App() {
         stops: selectedStops,
       });
       
-      const response = await fetch(`http://localhost:5001/api/places?${params.toString()}`);
+      const response = await fetch(`${API_URL}/api/places?${params.toString()}`);
       
       if (!response.ok) {
         const errorData = await response.json();

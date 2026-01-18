@@ -3,6 +3,7 @@ import { scorePlace } from "./scoreService.js";
 
 const client = new Client({});
 const SEARCH_RADIUS = 5000; // 5km
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:8008";
 
 /**
  * Geocodes a location string to latitude and longitude.
@@ -39,8 +40,7 @@ async function geocodeLocation(location) {
 async function getCategoriesFromAI(vibe) {
   console.log(`Getting categories for vibe: '${vibe}'...`);
   try {
-    const aiServiceUrl = "http://localhost:8008/categories";
-    const response = await fetch(aiServiceUrl, {
+    const response = await fetch(`${AI_SERVICE_URL}/categories`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vibe }),
@@ -132,8 +132,7 @@ export async function getSuggestedStops({ vibe = "chill", location, stops = 10 }
   const explanationPromises = topPlaces.map(async (place) => {
     try {
       console.log(`Getting AI explanation for ${place.name}...`);
-      const aiServiceUrl = "http://localhost:8008/explanation";
-      const response = await fetch(aiServiceUrl, {
+      const response = await fetch(`${AI_SERVICE_URL}/explanation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
