@@ -6,10 +6,7 @@ services:
     rootDir: ./ai
     buildCommand: "pip install -r requirements.txt"
     startCommand: "uvicorn ai.api:app --host 0.0.0.0 --port $PORT"
-    envVars:
-      - key: OPENAI_API_KEY
-        fromSecret: true
-
+    
   # Backend Service (Node.js)
   - name: gowhere-backend
     type: web
@@ -18,9 +15,8 @@ services:
     buildCommand: "npm install"
     startCommand: "npm start"
     envVars:
-      - key: GOOGLE_MAPS_API_KEY
-        fromSecret: true
       - key: AI_SERVICE_URL
         fromService:
           type: web
           name: gowhere-ai
+          property: url
